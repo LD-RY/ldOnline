@@ -35,6 +35,7 @@ class CourseOrg(models.Model):
     address = models.CharField(max_length=150,verbose_name='机构地址')
     city = models.ForeignKey(CityDict,verbose_name='所在城市',on_delete=models.CASCADE)
     add_time = models.DateTimeField(default=datetime.now)
+    tag = models.CharField(max_length=10,default='全国知名',verbose_name='机构标签')
 
     def __str__(self):
         return self.name

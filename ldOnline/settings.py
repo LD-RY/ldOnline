@@ -141,6 +141,8 @@ USE_TZ = False
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [os.path.join(BASE_DIR,'static')]
+# 静态文件
+STATIC_ROOT = os.path.join(BASE_DIR,'/static/')
 
 # 设置上传文件的路径
 MEDIA_URL = "/media/"

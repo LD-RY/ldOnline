@@ -101,6 +101,9 @@ class OrgHomeView(View):
             if UserFavorite.objects.filter(user=request.user, fav_id=course_org.id, fav_type=2):
                 has_fav = True
 
+        course_org.click_nums += 1
+        course_org.save()
+
         context = {
             'course_org':course_org,
             'all_courses':all_courses,
@@ -192,6 +195,24 @@ class AddFavView(View):
         if exist_record:
             # 如果记录已经存在，表示用户取消收藏
             exist_record.delete()
+            if int(type) == 1:
+                course = Course.objects.get(id=int(id))
+                course.fav_nums -= 1
+                if course.fav_nums < 0:
+                    course.fav_nums = 0
+                course.save()
+            elif int(type) == 2:
+                org = CourseOrg.objects.get(id=int(id))
+                org.fav_nums -= 1
+                if org.fav_nums < 0:
+                    org.fav_nums = 0
+                org.save()
+            elif int(type) == 3:
+                teacher = Teacher.objects.get(id=int(id))
+                teacher.fav_nums -= 1
+                if teacher.fav_nums < 0:
+                    teacher.fav_nums = 0
+                teacher.save()
             return HttpResponse('{"status":"success", "msg":"收藏"}', content_type='application/json')
         else:
             user_fav = UserFavorite()
@@ -200,17 +221,31 @@ class AddFavView(View):
                 user_fav.fav_id = int(id)
                 user_fav.fav_type = int(type)
                 user_fav.save()
+
+                if int(type) == 1:
+                    course = Course.objects.get(id=int(id))
+                    course.fav_nums += 1
+                    course.save()
+                elif int(type) == 2:
+                    org = CourseOrg.objects.get(id=int(id))
+                    org.fav_nums += 1
+                    org.save()
+                elif int(type) == 3:
+                    teacher = Teacher.objects.get(id=int(id))
+                    teacher.fav_nums += 1
+                    teacher.save()
                 return HttpResponse('{"status":"success", "msg":"已收藏"}', content_type='application/json')
             else:
                 return HttpResponse('{"status":"fail", "msg":"收藏出错"}', content_type='application/json')
 
 
+# 讲师列表
 class TeacherListView(View):
-
     def get(self, request):
         all_teachers = Teacher.objects.all()
         # 总共有多少老师使用count进行统计
         teacher_nums = all_teachers.count()
+
         # 搜索功能
         search_keywords = request.GET.get('keywords', '')
         if search_keywords:
@@ -218,26 +253,26 @@ class TeacherListView(View):
             # or操作使用Q
             all_teachers = all_teachers.filter(name__icontains=search_keywords)
         # 人气排序
-        sort = request.GET.get('sort', '')
+        sort = request.GET.get('sort','')
         if sort:
             if sort == 'hot':
                 all_teachers = all_teachers.order_by('-click_nums')
-        # 讲师排行榜
+
+        #讲师排行榜
         sorted_teacher = Teacher.objects.all().order_by('-click_nums')[:3]
         # 进行分页
         try:
             page = request.GET.get('page', 1)
         except PageNotAnInteger:
             page = 1
-        p = Paginator(all_teachers, 1, request=request)
+        p = Paginator(all_teachers, 2, request=request)
         teachers = p.page(page)
-        context = {
-            'all_teachers':all_teachers,
-            'teacher_nums':teacher_nums,
+        return render(request, "teacher/teachers-list.html", {
+            "all_teachers": teachers,
+            "teacher_nums": teacher_nums,
             'sorted_teacher':sorted_teacher,
             'sort':sort,
-        }
-        return render(request,'teacher/teachers-list.html',context)
+        })
 
 
 class TeacherDetailView(View):
@@ -256,6 +291,9 @@ class TeacherDetailView(View):
 
         # 讲师排行榜
         sorted_teacher = Teacher.objects.all().order_by('-click_nums')[:3]
+
+        teacher.click_nums += 1
+        teacher.save()
 
         return render(request, 'teacher/teacher-detail.html', {
             'teacher': teacher,

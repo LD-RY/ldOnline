@@ -84,9 +84,9 @@ $(function() {
     $('#jsResetPwdBtn').click(function () {
         $.ajax({
             cache: false,
-            type: "POST",
+            type: "post",
             dataType: 'json',
-            url: "",
+            url: "/users/upload/pwd/",
             data: $('#jsResetPwdForm').serialize(),
             async: true,
             success: function (data) {

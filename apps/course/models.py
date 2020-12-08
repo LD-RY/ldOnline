@@ -3,6 +3,7 @@ from django.db import models
 from datetime import datetime
 from organization.models import CourseOrg
 from organization.models import Teacher
+from DjangoUeditor.models import UEditorField
 
 
 # Course 课程
@@ -15,7 +16,7 @@ class Course(models.Model):
 
     name = models.CharField(max_length=50,verbose_name='课程名')
     desc = models.CharField(max_length=300,verbose_name='课程描述')
-    detail = models.TextField(verbose_name='课程详情')
+    detail = UEditorField(width=600,height=300,imagePath="courses/ueditor/",filePath="courses/ueidtor/",default='',verbose_name='课程详情')
     degree = models.CharField(choices=DEGREE_CHOICES,max_length=2,verbose_name='难度')
     learn_times = models.IntegerField(default=0,verbose_name='学习时长(分钟数)')
     students = models.IntegerField(default=0,verbose_name='学习人数')
@@ -29,6 +30,7 @@ class Course(models.Model):
     teacher = models.ForeignKey(Teacher, null=True, blank=True, on_delete=models.CASCADE,verbose_name='讲师')
     youneed_know = models.CharField( max_length=300, default='',verbose_name='课程须知')
     teacher_tell = models.CharField(max_length=300, default='',verbose_name='老师告诉你')
+    is_banner = models.BooleanField(default=False,verbose_name='是否轮播')
 
     class Meta:
         verbose_name = '课程'
@@ -36,7 +38,9 @@ class Course(models.Model):
 
     def get_zj_nums(self):
         # 获取课程的章节数
+        # 获取课程的章节数
         return self.lesson_set.all().count()
+    get_zj_nums.short_description = '章节数'  # 在后台显示的名称
 
     def get_course_lesson(self):
         # 获取课程的章节
@@ -45,6 +49,13 @@ class Course(models.Model):
     def get_learn_users(self):
         # 获取这门课程的学习用户
         return self.usercourse_set.all()[:5]
+
+    # def go_to(self):
+    #     from django.utils.safestring import mark_safe
+    #     # mark_safe后就不会转义
+    #     return mark_safe("<a href='https://home.cnblogs.com/u/derek1184405959/'>跳转</a>")
+    # go_to.short_description = "跳转"
+
 
     def __str__(self):
         return self.name
@@ -94,4 +105,14 @@ class CourseResource(models.Model):
     class Meta:
         verbose_name = '课程资源'
         verbose_name_plural = verbose_name
+
+
+
+class BannerCourse(Course):
+    '''显示轮播课程'''
+    class Meta:
+        verbose_name = '轮播课程'
+        verbose_name_plural = verbose_name
+        #这里必须设置proxy=True，这样就不会再生成一张表，同时还具有Model的功能
+        proxy = True
 

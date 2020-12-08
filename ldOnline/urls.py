@@ -19,8 +19,9 @@ from django.urls import path,include,re_path
 from django.views.static import serve
 from ldOnline.settings import MEDIA_ROOT
 from django.views.generic import TemplateView
-from users.views import LoginView,RegisterView,ActiveUserView,ForgetPwdView,ResetView,ModifyPwdView,LogoutView
-from organization.views_bak01 import OrgView
+from users.views import LoginView,RegisterView,ActiveUserView,ForgetPwdView,ResetView,ModifyPwdView,LogoutView,LoginUnsafeView,IndexView
+from organization.views import OrgView
+from ldOnline.settings import STATIC_ROOT
 urlpatterns = [
     path('xadmin/', xadmin.site.urls),
     # 处理图片显示的url，使用django自带的server，传入参数告诉他去哪个路径找，我们有配置好的路径MEDIAROOT
@@ -29,9 +30,10 @@ urlpatterns = [
     path('captcha/',include('captcha.urls')),
 
 
-    path('',TemplateView.as_view(template_name='index.html'),name='index'),# 首页
+    # path('',TemplateView.as_view(template_name='index.html'),name='index'),# 首页
+    path('',IndexView.as_view(),name='index'),# 首页
     path('login/',LoginView.as_view(),name='login'),# 登录
-    path('logout/', LogoutView.as_view(), name="logout"),
+    path('logout/', LogoutView.as_view(), name="logout"),# 退出登录
     path('register/',RegisterView.as_view(),name='register'),#注册
     re_path("active/(?P<active_code>.*)/",ActiveUserView.as_view(),name='user_active'),#激活用户
     path('forget/',ForgetPwdView.as_view(),name='forget_pwd'),# 忘记密码
@@ -40,6 +42,19 @@ urlpatterns = [
 
     path('users/',include('users.urls',namespace='users')),
     path("org/",include('organization.urls',namespace='org')),
-    path('course/',include('course.urls',namespace='course'))
+    path('course/',include('course.urls',namespace='course')),
+
+
+    # 全文配置404和500
+    re_path(r'^static/?P<path>.*',serve,{'document_root':STATIC_ROOT}),
+
+    re_path('^login/', LoginUnsafeView.as_view(), name='login')
+
 
 ]
+
+# 全局404页面配置
+handler404 = 'users.views.pag_not_found'
+
+# 全局500页面配置
+handler500 = 'users.views.page_error'

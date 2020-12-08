@@ -8,7 +8,7 @@
     <section>
         <div class="wp">
             <ul class="crumbs">
-                <li><a href="/index/">首页</a>></li>
+                <li><a href="{% url 'index' %}">首页</a>></li>
                 <li><a href="{% url 'org:teacher_list' %}">授课讲师</a>></li>
                 <li>讲师详情</li>
             </ul>
@@ -43,7 +43,7 @@
                             </div>
                         </dt>
                         <dd>
-                            <a href="/diary/hk_detail/10/">
+                            <a href="{% url 'org:teacher_detail' teacher.id %}">
                                 <h1>{{ teacher.name }}<span class="key picbig">金牌讲师</span></h1>
                             </a>
                             <ul class="cont">
